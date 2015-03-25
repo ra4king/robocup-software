@@ -122,6 +122,7 @@ void usage(const char* prog)
 	fprintf(stderr, "\t-c <file>:  specify the configuration file\n");
 	fprintf(stderr, "\t-s <seed>:  set random seed (hexadecimal)\n");
 	fprintf(stderr, "\t-pp <play>: enable named play\n");
+	fprintf(stderr, "\t-pbk <file>: playbook file, relative to the 'soccer/gameplay' folder\n");
 	fprintf(stderr, "\t-ng:        no goalie\n");
 	fprintf(stderr, "\t-sim:       use simulator\n");
 	fprintf(stderr, "\t-freq:      specify radio frequency (906 or 904)\n");
@@ -161,6 +162,8 @@ int main (int argc, char* argv[])
 	bool sim = false;
 	bool log = true;
     QString radioFreq;
+
+    string playbookFile;
 	
 	for (int i=1 ; i<argc; ++i)
 	{
@@ -193,7 +196,7 @@ int main (int argc, char* argv[])
         {
             if(i+1 >= argc)
             {
-                printf("No radio frequency specified after -freq");
+                printf("No radio frequency specified after -freq\n");
                 usage(argv[0]);
             }
 
@@ -204,7 +207,7 @@ int main (int argc, char* argv[])
 		{
 			if (i+1 >= argc)
 			{
-				printf("no config file specified after -c");
+				printf("no config file specified after -c\n");
 				usage(argv[0]);
 			}
 			
@@ -215,7 +218,7 @@ int main (int argc, char* argv[])
 		{
 			if (i+1 >= argc)
 			{
-				printf("no seed specified after -s");
+				printf("no seed specified after -s\n");
 				usage(argv[0]);
 			}
 			
@@ -226,12 +229,22 @@ int main (int argc, char* argv[])
 		{
 			if (i+1 >= argc)
 			{
-				printf("no play specified after -pp");
+				printf("no play specified after -pp\n");
 				usage(argv[0]);
 			}
 			
 			i++;
 			extraPlays.push_back(argv[i]);
+		}
+		else if(strcmp(var, "-pbk") == 0)
+		{
+			if(i+1 >= argc)
+			{
+				printf("no playbook file specified after -pbk\n");
+				usage(argv[0]);
+			}
+
+			playbookFile = argv[++i];
 		}
 		else
 		{
@@ -241,7 +254,7 @@ int main (int argc, char* argv[])
 	}
 
 
-	printf("Running on %s\n", sim ? "simulation" : "real hardware");
+	printf("Running on %s\n", sim ? "simulation" : "real hardwar\ne");
 	
 	printf("seed %016lx\n", seed);
 	srand48(seed);
@@ -300,10 +313,14 @@ int main (int argc, char* argv[])
 	win->logFileChanged();
 	
 	processor->start();
+
+	if(playbookFile.size() > 0)
+		processor->gameplayModule()->loadPlaybook(playbookFile);
 	
 	win->show();
 
 	processor->gameplayModule()->setupUI();
+
 
 	int ret = app.exec();
 	processor->stop();
